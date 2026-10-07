@@ -131,8 +131,8 @@ export const DynamicIsland: React.FC<DynamicIslandProps> = ({ user, timer, onNav
     if ('documentPictureInPicture' in window) {
       try {
         const pipWin = await (window as any).documentPictureInPicture.requestWindow({
-          width: 330,
-          height: 195,
+          width: 290,
+          height: 145,
         });
 
         // Copy all stylesheets & inline styles from main app to PiP window
@@ -161,15 +161,21 @@ export const DynamicIsland: React.FC<DynamicIslandProps> = ({ user, timer, onNav
         });
 
         const activeTheme = document.body.getAttribute('data-theme') || 'apple_space_black';
+        pipWin.document.documentElement.style.margin = '0';
+        pipWin.document.documentElement.style.padding = '0';
+        pipWin.document.documentElement.style.background = 'transparent';
+        pipWin.document.documentElement.style.overflow = 'hidden';
+
         pipWin.document.body.setAttribute('data-theme', activeTheme);
         pipWin.document.body.style.margin = '0';
-        pipWin.document.body.style.padding = '10px';
-        pipWin.document.body.style.background = 'var(--nexus-bg, #000000)';
+        pipWin.document.body.style.padding = '0';
+        pipWin.document.body.style.background = 'transparent';
         pipWin.document.body.style.fontFamily = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif';
         pipWin.document.body.style.display = 'flex';
         pipWin.document.body.style.alignItems = 'center';
         pipWin.document.body.style.justifyContent = 'center';
         pipWin.document.body.style.boxSizing = 'border-box';
+        pipWin.document.body.style.width = '100vw';
         pipWin.document.body.style.height = '100vh';
         pipWin.document.body.style.overflow = 'hidden';
         
@@ -186,13 +192,13 @@ export const DynamicIsland: React.FC<DynamicIslandProps> = ({ user, timer, onNav
             : Math.min(100, Math.round((timer.timeValue / 3600) * 100));
 
           pipWin.document.body.innerHTML = `
-            <div style="width: 100%; height: 100%; background: var(--nexus-card, rgba(28,28,30,0.85)); border-radius: 22px; border: 1px solid rgba(255,255,255,0.22); box-shadow: 0 16px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.25); padding: 14px 16px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: space-between; position: relative; overflow: hidden; backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); user-select: none;">
+            <div style="width: 100vw; height: 100vh; background: rgba(18, 18, 22, 0.72); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 14px; position: relative; overflow: hidden; backdrop-filter: blur(32px) saturate(200%); -webkit-backdrop-filter: blur(32px) saturate(200%); user-select: none;">
               
               <!-- Specular Liquid Highlight -->
-              <div style="position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent); pointer-events: none;"></div>
+              <div style="position: absolute; top: 0; left: 0; right: 0; height: 1.5px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent); pointer-events: none;"></div>
 
               <!-- Header: Subject & Mode Tag -->
-              <div style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;">
+              <div style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 2px;">
                 <span style="font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; color: var(--nexus-accent, #0a84ff);">
                   ${timer.subject || 'Focus Session'}
                 </span>
@@ -203,18 +209,18 @@ export const DynamicIsland: React.FC<DynamicIslandProps> = ({ user, timer, onNav
               </div>
 
               <!-- Live Timer Display -->
-              <div style="font-size: 40px; font-weight: 900; font-family: 'SF Mono', 'JetBrains Mono', Menlo, monospace; color: #ffffff; letter-spacing: -1.5px; text-shadow: 0 0 24px rgba(var(--nexus-accent-rgb, 10,132,255), 0.55); margin: 2px 0;">
+              <div style="font-size: 42px; font-weight: 900; font-family: 'SF Mono', 'JetBrains Mono', Menlo, monospace; color: #ffffff; letter-spacing: -1.5px; text-shadow: 0 0 24px rgba(var(--nexus-accent-rgb, 10,132,255), 0.6); margin: 0; line-height: 1;">
                 ${formatTime(rem)}
               </div>
 
               <!-- Live Status Pill -->
-              <div style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 4px 14px; border-radius: 999px; background: rgba(var(--nexus-accent-rgb, 10,132,255), 0.18); border: 1px solid rgba(var(--nexus-accent-rgb, 10,132,255), 0.35); color: var(--nexus-accent, #0a84ff); font-size: 11px; font-weight: 800;">
-                <span style="width: 7px; height: 7px; border-radius: 50%; background: var(--nexus-accent, #0a84ff); ${isStudying ? 'box-shadow: 0 0 10px var(--nexus-accent, #0a84ff);' : ''}"></span>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 3px 12px; border-radius: 999px; background: rgba(var(--nexus-accent-rgb, 10,132,255), 0.2); border: 1px solid rgba(var(--nexus-accent-rgb, 10,132,255), 0.35); color: var(--nexus-accent, #0a84ff); font-size: 10.5px; font-weight: 800;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--nexus-accent, #0a84ff); ${isStudying ? 'box-shadow: 0 0 8px var(--nexus-accent, #0a84ff);' : ''}"></span>
                 <span>${isStudying ? '🔥 Focusing Live' : 'Ready to Focus'}</span>
               </div>
 
               <!-- Progress Bar -->
-              <div style="width: 100%; height: 4px; border-radius: 999px; background: rgba(255,255,255,0.12); overflow: hidden; margin-top: 4px;">
+              <div style="width: 100%; height: 3.5px; border-radius: 999px; background: rgba(255,255,255,0.12); overflow: hidden; margin-bottom: 2px;">
                 <div style="width: ${pct}%; height: 100%; background: var(--nexus-accent, #0a84ff); border-radius: 999px; transition: width 0.3s ease; box-shadow: 0 0 10px var(--nexus-accent, #0a84ff);"></div>
               </div>
             </div>

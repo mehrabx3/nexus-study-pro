@@ -939,6 +939,67 @@ const App: React.FC = () => {
                           </button>
                       </div>
                   </div>
+
+                  {/* Background Ambient Blobs Controls */}
+                  <div className="p-8 rounded-3xl bg-nexus-card/60 border border-nexus-border space-y-6 backdrop-blur-md animate-fade-in shadow-sm">
+                      <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-2xl bg-nexus-electric/10 border border-nexus-electric/20 flex items-center justify-center shadow-sm">
+                              <Sparkles className="w-6 h-6 text-nexus-electric" />
+                          </div>
+                          <div>
+                              <h3 className="text-sm font-bold text-white uppercase tracking-widest">Background Ambient Blobs</h3>
+                              <p className="text-xs text-zinc-400 mt-0.5">Adjust the transparency and animation speed of the background liquid glow blobs.</p>
+                          </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                          {/* Opacity / Transparency Slider */}
+                          <div className="space-y-2">
+                              <div className="flex justify-between items-center text-xs">
+                                  <span className="font-bold text-zinc-300 uppercase tracking-wider">Glow Transparency</span>
+                                  <span className="font-mono text-nexus-electric font-bold">
+                                    {Math.round((user.blobOpacity !== undefined ? user.blobOpacity : 0.7) * 100)}%
+                                  </span>
+                              </div>
+                              <input 
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.05"
+                                value={user.blobOpacity !== undefined ? user.blobOpacity : 0.7}
+                                onChange={async (e) => {
+                                  const val = parseFloat(e.target.value);
+                                  setUser(prev => prev ? { ...prev, blobOpacity: val } : null);
+                                  await dbService.updateUserProfile(user.uid, { blobOpacity: val });
+                                }}
+                                className="w-full accent-nexus-electric h-2 bg-nexus-black/60 rounded-lg cursor-pointer"
+                              />
+                          </div>
+
+                          {/* Animation Speed Slider */}
+                          <div className="space-y-2">
+                              <div className="flex justify-between items-center text-xs">
+                                  <span className="font-bold text-zinc-300 uppercase tracking-wider">Animation Motion Speed</span>
+                                  <span className="font-mono text-nexus-electric font-bold">
+                                    {(user.blobSpeed !== undefined ? user.blobSpeed : 1.0) === 0 ? 'Paused' : `${(user.blobSpeed !== undefined ? user.blobSpeed : 1.0).toFixed(1)}x`}
+                                  </span>
+                              </div>
+                              <input 
+                                type="range"
+                                min="0"
+                                max="3"
+                                step="0.1"
+                                value={user.blobSpeed !== undefined ? user.blobSpeed : 1.0}
+                                onChange={async (e) => {
+                                  const val = parseFloat(e.target.value);
+                                  setUser(prev => prev ? { ...prev, blobSpeed: val } : null);
+                                  await dbService.updateUserProfile(user.uid, { blobSpeed: val });
+                                }}
+                                className="w-full accent-nexus-electric h-2 bg-nexus-black/60 rounded-lg cursor-pointer"
+                              />
+                          </div>
+                      </div>
+                  </div>
                 </div>
               )}
 
@@ -1315,11 +1376,45 @@ const App: React.FC = () => {
   return (
     <div className={`flex h-screen overflow-hidden bg-nexus-black text-zinc-100 font-sans transition-all duration-1000 relative selection:bg-nexus-electric selection:text-white`}>
       {/* Liquid Ambient Organic Floating Blobs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="blob-1 absolute -top-[15%] -left-[10%] w-[55vw] h-[55vw] rounded-full bg-nexus-electric/15 blur-[140px] opacity-70" />
-        <div className="blob-2 absolute -bottom-[20%] -right-[10%] w-[50vw] h-[50vw] rounded-full bg-nexus-violet/15 blur-[150px] opacity-60" />
-        <div className="absolute top-[35%] left-[30%] w-[35vw] h-[35vw] rounded-full bg-indigo-500/8 blur-[160px] opacity-40" />
-      </div>
+      {(() => {
+        const op = user?.blobOpacity !== undefined ? user.blobOpacity : 0.7;
+        const spd = user?.blobSpeed !== undefined ? user.blobSpeed : 1.0;
+        if (op <= 0) return null;
+        
+        const isPaused = spd === 0;
+        const s1 = `${20 / (spd > 0 ? spd : 1)}s`;
+        const s2 = `${25 / (spd > 0 ? spd : 1)}s`;
+        const s3 = `${30 / (spd > 0 ? spd : 1)}s`;
+
+        return (
+          <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 transition-opacity duration-300" style={{ opacity: op }}>
+            <div 
+              className="animate-blob-1 absolute -top-[15%] -left-[10%] w-[60vw] h-[60vw] rounded-full blur-[130px]"
+              style={{ 
+                background: 'radial-gradient(circle, var(--nexus-accent) 0%, rgba(var(--nexus-accent-rgb), 0.3) 50%, transparent 70%)',
+                animationDuration: s1,
+                animationPlayState: isPaused ? 'paused' : 'running'
+              }}
+            />
+            <div 
+              className="animate-blob-2 absolute -bottom-[20%] -right-[10%] w-[55vw] h-[55vw] rounded-full blur-[150px]"
+              style={{ 
+                background: 'radial-gradient(circle, var(--nexus-accent-alt, var(--nexus-accent)) 0%, rgba(var(--nexus-accent-rgb), 0.2) 50%, transparent 70%)',
+                animationDuration: s2,
+                animationPlayState: isPaused ? 'paused' : 'running'
+              }}
+            />
+            <div 
+              className="animate-blob-3 absolute top-[30%] left-[25%] w-[45vw] h-[45vw] rounded-full blur-[160px]"
+              style={{ 
+                background: 'radial-gradient(circle, rgba(var(--nexus-accent-rgb), 0.4) 0%, transparent 70%)',
+                animationDuration: s3,
+                animationPlayState: isPaused ? 'paused' : 'running'
+              }}
+            />
+          </div>
+        );
+      })()}
       <div className={`fixed inset-0 bg-gradient-to-tr from-nexus-electric/5 via-transparent to-transparent pointer-events-none z-0`} />
       {isCommandPaletteOpen && (
         <CommandPalette 

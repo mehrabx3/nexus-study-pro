@@ -77,6 +77,29 @@
       }
     </script>
     <style>
+      /* --- ORGANIC BLURRY AMBIENT FLOATING BLOBS ANIMATIONS --- */
+      @keyframes float-blob-1 {
+        0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+        33% { transform: translate(100px, -70px) scale(1.2) rotate(120deg); }
+        66% { transform: translate(-60px, 60px) scale(0.9) rotate(240deg); }
+        100% { transform: translate(0px, 0px) scale(1) rotate(360deg); }
+      }
+      @keyframes float-blob-2 {
+        0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+        33% { transform: translate(-110px, 80px) scale(0.85) rotate(-120deg); }
+        66% { transform: translate(70px, -50px) scale(1.15) rotate(-240deg); }
+        100% { transform: translate(0px, 0px) scale(1) rotate(-360deg); }
+      }
+      @keyframes float-blob-3 {
+        0% { transform: translate(0px, 0px) scale(1); }
+        50% { transform: translate(80px, 90px) scale(1.25); }
+        100% { transform: translate(0px, 0px) scale(1); }
+      }
+
+      .animate-blob-1 { animation: float-blob-1 20s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+      .animate-blob-2 { animation: float-blob-2 25s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+      .animate-blob-3 { animation: float-blob-3 30s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+
       /* --- APPLE SYSTEM COLOR THEMES (HIG SPECIFICATION) --- */
       :root {
         --nexus-bg: #000000;

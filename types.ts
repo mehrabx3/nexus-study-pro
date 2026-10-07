@@ -102,6 +102,8 @@ export interface UserProfile {
   currentSubject?: string;
   dailyGoalMinutes?: number;
   enableDynamicIsland?: boolean;
+  blobOpacity?: number;
+  blobSpeed?: number;
   lastActivity?: number;
   xp?: number;
   level?: number;

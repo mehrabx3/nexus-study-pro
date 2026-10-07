@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { 
   Play, Pause, RotateCcw, Brain, Plus, X, Volume2, VolumeX, Settings2, 
   Check, FastForward, Maximize2, Minimize2, Timer as TimerIcon, Hourglass,
@@ -325,51 +326,104 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({ user, subjects, setSubje
     ? ((globalTimer.totalTime - globalTimer.timeValue) / globalTimer.totalTime) * 100 
     : 100;
 
-  const renderFullscreen = () => (
-    <div className="fixed inset-0 z-[9999] bg-[#050507] flex flex-col items-center justify-center animate-fade-in overflow-hidden select-none">
-      <div className="blob-1 absolute top-[20%] left-[25%] w-[50vw] h-[50vw] rounded-full bg-nexus-electric/15 blur-[150px] pointer-events-none" />
-      <button onClick={() => setIsFullscreen(false)} className="absolute top-10 right-10 p-4 liquid-glass rounded-3xl text-zinc-400 hover:text-white transition-all squish" title="Exit (ESC)">
-        <Minimize2 className="w-6 h-6" />
-      </button>
-
-      <div className="relative flex items-center justify-center" style={{ width: 560, height: 560 }}>
-        <svg viewBox="0 0 560 560" className="w-full h-full transform -rotate-90 absolute inset-0">
-          <circle cx="280" cy="280" r="230" strokeWidth="6" stroke="rgba(255,255,255,0.05)" fill="transparent" />
-          <circle cx="280" cy="280" r="230" strokeWidth="8" stroke="var(--nexus-accent)" fill="transparent" 
-            strokeDasharray={2 * Math.PI * 230}
-            strokeDashoffset={isPomodoro ? (2 * Math.PI * 230 * (1 - progress / 100)) : (globalTimer.isActive ? undefined : 2 * Math.PI * 230)}
-            strokeLinecap="round"
-            className={`${!isPomodoro && globalTimer.isActive ? 'animate-pulse' : ''} transition-all duration-700 ease-out`}
-            style={{ filter: 'drop-shadow(0 0 16px rgba(var(--nexus-accent-rgb),0.6))' }}
-          />
-        </svg>
-
-        <div className="flex flex-col items-center justify-center text-center z-10">
-          <div className="text-[11rem] font-black text-white tabular-nums tracking-tighter leading-none font-mono">
-            {formatTime(globalTimer.timeValue)}
+  const renderFullscreen = () => {
+    const activeTheme = document.body.getAttribute('data-theme') || 'apple_space_black';
+    return ReactDOM.createPortal(
+      <div 
+        data-theme={activeTheme}
+        className="fixed inset-0 z-[999999] bg-nexus-black flex flex-col items-center justify-between p-8 sm:p-12 animate-fade-in overflow-hidden select-none"
+      >
+        {/* Top Header Bar */}
+        <div className="w-full max-w-5xl flex items-center justify-between z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-nexus-electric/20 border border-nexus-electric/30 flex items-center justify-center shadow-lg">
+              <TimerIcon className="w-5 h-5 text-nexus-electric" />
+            </div>
+            <div>
+              <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+                Focus Clock
+                <span className="px-2.5 py-0.5 rounded-full bg-nexus-electric/20 text-nexus-electric text-[9px] font-black uppercase tracking-wider border border-nexus-electric/30">
+                  Zen Mode
+                </span>
+              </h2>
+              <p className="text-xs text-zinc-400 font-semibold mt-0.5">{globalTimer.subject} • {globalTimer.type.toUpperCase()}</p>
+            </div>
           </div>
-          <div className="mt-6 flex flex-col items-center gap-3">
-            <span className="px-6 py-2 rounded-full liquid-glass text-xs font-black uppercase tracking-[0.3em] text-white">
-              {globalTimer.type} • {globalTimer.mode}
-            </span>
-            {globalTimer.mode === 'focus' && (
-              <span className="text-xl font-bold text-zinc-400 tracking-wide flex items-center gap-2">
-                <Brain className="w-5 h-5 text-nexus-electric" /> {globalTimer.subject}
+
+          <button 
+            onClick={() => setIsFullscreen(false)} 
+            className="p-3.5 liquid-glass rounded-2xl text-zinc-400 hover:text-white border border-white/20 transition-all squish shadow-2xl" 
+            title="Exit Fullscreen (ESC)"
+          >
+            <Minimize2 className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Center Circular Timer HUD */}
+        <div className="relative flex items-center justify-center z-10 my-auto" style={{ width: 520, height: 520 }}>
+          <svg viewBox="0 0 520 520" className="w-full h-full transform -rotate-90 absolute inset-0">
+            <circle cx="260" cy="260" r="210" strokeWidth="8" stroke="rgba(255,255,255,0.06)" fill="transparent" />
+            <circle cx="260" cy="260" r="210" strokeWidth="10" stroke="var(--nexus-accent)" fill="transparent" 
+              strokeDasharray={2 * Math.PI * 210}
+              strokeDashoffset={isPomodoro ? (2 * Math.PI * 210 * (1 - progress / 100)) : (globalTimer.isActive ? undefined : 2 * Math.PI * 210)}
+              strokeLinecap="round"
+              className={`${!isPomodoro && globalTimer.isActive ? 'animate-pulse' : ''} transition-all duration-700 ease-out`}
+              style={{ filter: 'drop-shadow(0 0 24px rgba(var(--nexus-accent-rgb),0.65))' }}
+            />
+          </svg>
+
+          <div className="flex flex-col items-center justify-center text-center z-10 px-4">
+            <div className="text-[7.5rem] sm:text-[9.5rem] font-black text-white tabular-nums tracking-tighter leading-none font-mono drop-shadow-[0_0_35px_rgba(var(--nexus-accent-rgb),0.35)]">
+              {formatTime(globalTimer.timeValue)}
+            </div>
+            <div className="mt-4 flex flex-col items-center gap-2.5">
+              <span className="px-5 py-1.5 rounded-full liquid-glass border border-white/20 text-xs font-black uppercase tracking-[0.25em] text-nexus-electric shadow-xl">
+                {globalTimer.type} • {globalTimer.mode}
               </span>
-            )}
+              {globalTimer.mode === 'focus' && (
+                <span className="text-lg font-bold text-zinc-300 tracking-wide flex items-center gap-2 mt-1">
+                  <Brain className="w-5 h-5 text-nexus-electric" /> {globalTimer.subject}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="absolute bottom-16 flex items-center gap-8">
-          <button onClick={handleReset} className="w-16 h-16 rounded-full liquid-glass text-zinc-400 hover:text-white flex items-center justify-center squish"><RotateCcw className="w-5 h-5" /></button>
-          <button onClick={toggleTimer} className={`w-24 h-24 rounded-full flex items-center justify-center transition-all hover:scale-105 squish ${globalTimer.isActive ? 'bg-nexus-electric/20 text-nexus-electric border border-nexus-electric/40 shadow-[0_0_50px_rgba(var(--nexus-accent-rgb),0.35)]' : 'bg-nexus-electric text-black shadow-[0_0_50px_rgba(var(--nexus-accent-rgb),0.4)]'}`}>
-            {globalTimer.isActive ? <Pause className="w-10 h-10 fill-current" /> : <Play className="w-10 h-10 fill-black ml-1" />}
+        {/* Bottom Floating Timer Control Bar */}
+        <div className="z-10 pb-4 flex items-center gap-6">
+          <button 
+            onClick={handleReset} 
+            className="w-16 h-16 rounded-2xl liquid-glass border border-white/20 text-zinc-300 hover:text-white flex items-center justify-center transition-all squish shadow-xl"
+            title="Reset Timer"
+          >
+            <RotateCcw className="w-6 h-6" />
           </button>
-          <button onClick={() => globalTimer.manualEnd()} className="w-16 h-16 rounded-full liquid-glass border border-nexus-electric/30 text-nexus-electric flex items-center justify-center squish"><FastForward className="w-5 h-5" /></button>
-      </div>
-    </div>
-  );
+
+          <button 
+            onClick={toggleTimer} 
+            className={`w-22 h-22 rounded-3xl flex items-center justify-center transition-all hover:scale-105 squish ${
+              globalTimer.isActive 
+                ? 'bg-nexus-electric/25 text-nexus-electric border-2 border-nexus-electric shadow-[0_0_50px_rgba(var(--nexus-accent-rgb),0.45)]' 
+                : 'bg-nexus-electric text-black shadow-[0_0_50px_rgba(var(--nexus-accent-rgb),0.5)]'
+            }`}
+            style={{ width: '88px', height: '88px' }}
+            title={globalTimer.isActive ? "Pause" : "Start"}
+          >
+            {globalTimer.isActive ? <Pause className="w-9 h-9 fill-current" /> : <Play className="w-9 h-9 fill-black ml-1" />}
+          </button>
+
+          <button 
+            onClick={() => globalTimer.manualEnd()} 
+            className="w-16 h-16 rounded-2xl liquid-glass border border-nexus-electric/40 text-nexus-electric flex items-center justify-center transition-all squish shadow-xl"
+            title="Complete Session"
+          >
+            <FastForward className="w-6 h-6" />
+          </button>
+        </div>
+      </div>,
+      document.body
+    );
+  };
 
   if (isFullscreen) return renderFullscreen();
 
