@@ -131,30 +131,91 @@ export const DynamicIsland: React.FC<DynamicIslandProps> = ({ user, timer, onNav
     if ('documentPictureInPicture' in window) {
       try {
         const pipWin = await (window as any).documentPictureInPicture.requestWindow({
-          width: 340,
-          height: 180,
+          width: 330,
+          height: 195,
         });
+
+        // Copy all stylesheets & inline styles from main app to PiP window
+        [...document.styleSheets].forEach((styleSheet) => {
+          try {
+            if (styleSheet.cssRules) {
+              const newStyleEl = pipWin.document.createElement('style');
+              for (const cssRule of styleSheet.cssRules) {
+                newStyleEl.appendChild(pipWin.document.createTextNode(cssRule.cssText));
+              }
+              pipWin.document.head.appendChild(newStyleEl);
+            } else if (styleSheet.href) {
+              const newLinkEl = pipWin.document.createElement('link');
+              newLinkEl.rel = 'stylesheet';
+              newLinkEl.href = styleSheet.href;
+              pipWin.document.head.appendChild(newLinkEl);
+            }
+          } catch (e) {
+            if (styleSheet.href) {
+              const newLinkEl = pipWin.document.createElement('link');
+              newLinkEl.rel = 'stylesheet';
+              newLinkEl.href = styleSheet.href;
+              pipWin.document.head.appendChild(newLinkEl);
+            }
+          }
+        });
+
+        const activeTheme = document.body.getAttribute('data-theme') || 'apple_space_black';
+        pipWin.document.body.setAttribute('data-theme', activeTheme);
         pipWin.document.body.style.margin = '0';
-        pipWin.document.body.style.background = '#09090b';
-        pipWin.document.body.style.fontFamily = 'system-ui, -apple-system, sans-serif';
-        pipWin.document.body.style.color = '#fff';
+        pipWin.document.body.style.padding = '10px';
+        pipWin.document.body.style.background = 'var(--nexus-bg, #000000)';
+        pipWin.document.body.style.fontFamily = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif';
         pipWin.document.body.style.display = 'flex';
-        pipWin.document.body.style.flexDirection = 'column';
         pipWin.document.body.style.alignItems = 'center';
         pipWin.document.body.style.justifyContent = 'center';
-        pipWin.document.body.style.padding = '16px';
+        pipWin.document.body.style.boxSizing = 'border-box';
+        pipWin.document.body.style.height = '100vh';
+        pipWin.document.body.style.overflow = 'hidden';
         
         const renderPip = () => {
+          const currentTheme = document.body.getAttribute('data-theme') || 'apple_space_black';
+          pipWin.document.body.setAttribute('data-theme', currentTheme);
+          
+          const isStudying = timer.isActive;
+          const rem = timer.type === 'pomodoro' 
+            ? Math.max(0, timer.totalTime - timer.timeValue) 
+            : timer.timeValue;
+          const pct = timer.type === 'pomodoro'
+            ? Math.min(100, Math.round((timer.timeValue / timer.totalTime) * 100))
+            : Math.min(100, Math.round((timer.timeValue / 3600) * 100));
+
           pipWin.document.body.innerHTML = `
-            <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px;">
-              <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:#a1a1aa; font-weight:800;">
-                ${timer.subject} · ${timer.type.toUpperCase()}
+            <div style="width: 100%; height: 100%; background: var(--nexus-card, rgba(28,28,30,0.85)); border-radius: 22px; border: 1px solid rgba(255,255,255,0.22); box-shadow: 0 16px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.25); padding: 14px 16px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: space-between; position: relative; overflow: hidden; backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); user-select: none;">
+              
+              <!-- Specular Liquid Highlight -->
+              <div style="position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent); pointer-events: none;"></div>
+
+              <!-- Header: Subject & Mode Tag -->
+              <div style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;">
+                <span style="font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; color: var(--nexus-accent, #0a84ff);">
+                  ${timer.subject || 'Focus Session'}
+                </span>
+                <span style="font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.3);">•</span>
+                <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.6);">
+                  ${timer.type.toUpperCase()}
+                </span>
               </div>
-              <div style="font-size:36px; font-weight:900; font-family:monospace; color:#388bfd; letter-spacing:-1px;">
-                ${formatTime(remaining)}
+
+              <!-- Live Timer Display -->
+              <div style="font-size: 40px; font-weight: 900; font-family: 'SF Mono', 'JetBrains Mono', Menlo, monospace; color: #ffffff; letter-spacing: -1.5px; text-shadow: 0 0 24px rgba(var(--nexus-accent-rgb, 10,132,255), 0.55); margin: 2px 0;">
+                ${formatTime(rem)}
               </div>
-              <div style="font-size:12px; font-weight:700; color:#30d158; display:flex; align-items:center; gap:4px;">
-                ${timer.isActive ? '🔥 Focusing Live' : 'Ready to Focus'}
+
+              <!-- Live Status Pill -->
+              <div style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 4px 14px; border-radius: 999px; background: rgba(var(--nexus-accent-rgb, 10,132,255), 0.18); border: 1px solid rgba(var(--nexus-accent-rgb, 10,132,255), 0.35); color: var(--nexus-accent, #0a84ff); font-size: 11px; font-weight: 800;">
+                <span style="width: 7px; height: 7px; border-radius: 50%; background: var(--nexus-accent, #0a84ff); ${isStudying ? 'box-shadow: 0 0 10px var(--nexus-accent, #0a84ff);' : ''}"></span>
+                <span>${isStudying ? '🔥 Focusing Live' : 'Ready to Focus'}</span>
+              </div>
+
+              <!-- Progress Bar -->
+              <div style="width: 100%; height: 4px; border-radius: 999px; background: rgba(255,255,255,0.12); overflow: hidden; margin-top: 4px;">
+                <div style="width: ${pct}%; height: 100%; background: var(--nexus-accent, #0a84ff); border-radius: 999px; transition: width 0.3s ease; box-shadow: 0 0 10px var(--nexus-accent, #0a84ff);"></div>
               </div>
             </div>
           `;
